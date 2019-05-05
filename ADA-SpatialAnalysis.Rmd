@@ -9,3 +9,19 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+##Preliminaries
+Load and install the following packages: 
+
+##Objectives
+
+##Loading GIS Data into R
+
+##Point Pattern Analysis
+
+##Density Mapping
+
+##Overlaying Maps and Creating 3D Maps
+
+##3D Plotting to Visualize Data
+
+##Concept Review
