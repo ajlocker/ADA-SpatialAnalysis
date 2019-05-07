@@ -20,6 +20,57 @@ Load and install the following packages:
 
 ##Density Mapping
 
+```{R}
+library(tmap)
+library(leaflet)
+library(rgdal)
+library(rgeos)
+library(sp)
+library(raster)
+library(adehabitatHR)
+```
+```{R}
+#Loading and plotting shapefile (Peru and its departamentos)
+DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
+plot(DEPARTAMENTO)
+proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
+```
+```{R}
+#Loading and plotting point data (recorded archaeological sites in Peru)
+SitioArqueologico <- readOGR(".", "SitioArqueologico")
+plot(SitioArqueologico)
+proj4string(SitioArqueologico) <- CRS("+init=EPSG:32718")
+```
+```{R}
+#Kernel density estimation uses a moving quadrant to calculate the density for each area within a given threshold.
+kde.output <- kernelUD(SitioArqueologico, h="href", grid = 1000)
+plot(kde.output)
+```
+```{R}
+#Convert to raster
+kde <- raster(kde.output)
+```
+```{R}
+#Map raster
+tm_shape(kde) + tm_raster("ud")
+```
+```{R}
+# Mask the raster by the output area polygon.
+masked_kde <- mask(kde, SitioArqueologico)
+# Catchment boundaries for kernel density estimates.
+range75 <- getverticeshr(kde.output, percent = 75)
+range50 <- getverticeshr(kde.output, percent = 50)
+range25 <- getverticeshr(kde.output, percent = 25)
+```
+```{R}
+tm_shape(DEPARTAMENTO) + tm_fill(col = "#f0f0f0") + tm_borders(alpha=.8, col = "white") + tm_shape(SitioArqueologico) + tm_dots(col = "blue") +
+tm_shape(range75) + tm_borders(alpha=.7, col = "#fb6a4a", lwd = 2) + tm_fill(alpha=.1, col = "#fb6a4a") +
+tm_shape(range50) + tm_borders(alpha=.7, col = "#de2d26", lwd = 2) +
+tm_fill(alpha=.1, col = "#de2d26") +
+tm_shape(range25) + tm_borders(alpha=.7, col = "#a50f15", lwd = 2) +
+tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
+```
+
 ##Overlaying Maps and Creating 3D Maps
 
 ##3D Plotting to Visualize Data
