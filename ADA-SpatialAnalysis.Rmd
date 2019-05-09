@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ##Preliminaries
-Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {sp}, {raster}, {adehabitatHR}, {devtools}, {rayshader}
+Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {sp}, {raster}, {adehabitatHR}, {devtools}, {rayshader}, {mapmate}
 
 ##Objectives
 The objective of this module is to demonstrate some of the capabilities R has for handling spatial data. We will provide you with a brief overview of the various formats of spatial data, explain how to import spatial data into R, and provide a few examples of spatial data manipulation.  
@@ -89,18 +89,31 @@ tm_compass() +
 tm_layout(title = "Camden, Arizona", legend.text.size = 1.1,
 legend.title.size = 1.4, legend.position = c("right", "top"), frame = FALSE)
 ```
+## ## Mapping densities
+
+Density mapping is a means of visualizing concentrations of spatial phenomena. Point data are most often used for density mapping, but lines can also be used. If you have a high volume of point data distributed across a large area, it may be difficult to understand the distribution of points. Density maps can simplify this data by showing where points are concentrated.
+
+Density mapping can be incredibly useful when you have a large data set representing isolated phenomena over a continuous surface (e.g., artifacts, populations). As such, density mapping would not be useful for representing small data sets, or data that represents continuous phenomena (e.g., elevation or temperature). With spatial data visualization it is important to understand first what kind of data you have, and what you want to represent or analyze.
+
 ```{R}
 #Loading and plotting shapefile (Peru and its departamentos)
 DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
-plot(DEPARTAMENTO)
+# Setting the projection to the appropriate coordinate system
 proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
+plot(DEPARTAMENTO)
 ```
 ```{R}
 #Loading and plotting point data (recorded archaeological sites in Peru)
 SitioArqueologico <- readOGR(".", "SitioArqueologico")
-plot(SitioArqueologico)
+# Setting the projection to the appropriate coordinate system
 proj4string(SitioArqueologico) <- CRS("+init=EPSG:32718")
+plot(SitioArqueologico)
 ```
+
+Here we see that we have a very high density of points and it is difficult to distinguish where the higher concentrations of points are located at this resolution.
+
+## Kernel density
+
 ```{R}
 #Kernel density estimation uses a moving quadrant to calculate the density for each area within a given threshold.
 kde.output <- kernelUD(SitioArqueologico, h="href", grid = 1000)
@@ -137,110 +150,6 @@ tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
 
 #Load in the packages
 
-```{r}
-library(raster)
-library(mapmate)
-library(dplyr)
-library(geosphere)
-library(data.table)
-library("parallel")
-library(purrr)
-library(RColorBrewer)
-library(classInt)
-
-#Load in the raster data
-marble <- raster("BlackMarble_2016_3km_geo.tif")
-
-#Simplify the raster - to test this out I would set the value at 50+
-marble <- aggregate(marble, 10)
-
-#Extact the values and coordinates from the raster grid - this is what is passed onto ggplot2.
-marble.pts <- rasterToPoints(marble, spatial=T)
-marble.pts@data <- data.frame(marble.pts@data, long=coordinates(marble.pts)[,1],lat=coordinates(marble.pts)[,2]) 
-names(marble.pts@data)<- c("z","lon","lat")
-
-#Convert to the tidyverse, required for mappmate.
-marble.dat <- as_data_frame(marble.pts@data)
-
-#We aren't plotting the image colours - rather a series of rectangles to be coloured by the pixel value. The range of colours needs to be specified. For this I have extraced the main colours from NASA's image and approximately aligned them to their corresponding values. This is seen the colour palette below that gets fed into the map.
-pal <- colorRampPalette(c("#0b0c1a","#1e1c37","#202144","#2b3355","#7f6e61","#d0b695","#efd7af", "#fefbe6"), bias=2.75)
-n<-30
-
-#some more magic here - see the vignette I link to above.
-marble.frame <- map(1:n, ~mutate(marble.dat, frameID = .x))
-rng <- range(marble.dat$z, na.rm=TRUE)
-file <- "3D_rotating_simp"
-id <- "frameID"
-
-#OK - here goes! You need the parallel package up and running - mc.cores specifies how many processors to use. You can see I used 30 but this can obviously be less.
-
-mclapply(marble.frame, save_map,z.name="z", id=id, lon=0, lat=0, n.period=30, n.frames=n, col=pal(5000), type="maptiles", file=file, z.range=rng,png.args = list(width = 30, 
-        height = 30, res = 300, bg = "transparent", units="cm"),rotation.axis = 0,mc.cores=30)
-```
-
-##Concept Review
-
-
-##Density Mapping
-
-```{R}
-library(tmap)
-library(leaflet)
-library(rgdal)
-library(rgeos)
-library(sp)
-library(raster)
-library(adehabitatHR)
-```
-
-```{R}
-#Loading and plotting shapefile (Peru and its departamentos)
-DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
-plot(DEPARTAMENTO)
-proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
-```
-
-```{R}
-#Loading and plotting point data (recorded archaeological sites in Peru)
-SitioArqueologico <- readOGR(".", "SitioArqueologico")
-plot(SitioArqueologico)
-proj4string(SitioArqueologico) <- CRS("+init=EPSG:32718")
-```
-
-```{R}
-#Kernel density estimation uses a moving quadrant to calculate the density for each area within a given threshold.
-kde.output <- kernelUD(SitioArqueologico, h="href", grid = 1000)
-plot(kde.output)
-```
-
-```{R}
-#Convert to raster
-kde <- raster(kde.output)
-```
-
-```{R}
-#Map raster
-tm_shape(kde) + tm_raster("ud")
-```
-
-```{R}
-# Mask the raster by the output area polygon.
-masked_kde <- mask(kde, SitioArqueologico)
-# Catchment boundaries for kernel density estimates.
-range75 <- getverticeshr(kde.output, percent = 75)
-range50 <- getverticeshr(kde.output, percent = 50)
-range25 <- getverticeshr(kde.output, percent = 25)
-```
-
-```{R}
-tm_shape(DEPARTAMENTO) + tm_fill(col = "#f0f0f0") + tm_borders(alpha=.8, col = "white") + tm_shape(SitioArqueologico) + tm_dots(col = "blue") +
-tm_shape(range75) + tm_borders(alpha=.7, col = "#fb6a4a", lwd = 2) + tm_fill(alpha=.1, col = "#fb6a4a") +
-tm_shape(range50) + tm_borders(alpha=.7, col = "#de2d26", lwd = 2) +
-tm_fill(alpha=.1, col = "#de2d26") +
-tm_shape(range25) + tm_borders(alpha=.7, col = "#a50f15", lwd = 2) +
-tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
-```
-
 #LiDAR Data and R
 
 **Li**ght **D**etection **A**nd **R**anging **(LiDAR)** is very useful survey method that uses pulses of laser light to measure reflected distance between a given sensor (typically on the bottom of an airplane) and a survey area. 
@@ -262,7 +171,6 @@ The first thing we will need to do is set up a working directory for the files.
 ```{r}
 # Load needed packages
 library(raster)
-library(rgdal)
 
 # set working directory to data folder
 setwd("C:/Users/ajlocker/Desktop/R Geospatial")
