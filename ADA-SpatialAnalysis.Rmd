@@ -267,10 +267,11 @@ atxcp
 plot(atxcp)
 ```
 
+Now that our raster is cropped, we will create our 3D maps. 
 ```{r}
 library(rayshader)
 
-#Now that we have our raster cropped, we need convert it to a matrix:
+#First we need to convert our cropped raster file to a matrix:
 atxmat = matrix(raster::extract(atxcp,raster::extent(atxcp),buffer=1000),
                nrow=ncol(atxcp),ncol=nrow(atxcp))
 
@@ -303,4 +304,11 @@ Spatial Data has sevaral formats and each of them can be read in R.
 
 R has the ability to read and manipulate LiDAR data. 
 
-You have the ability to generate interative and 3D maps/models with packages like {leaflet} and {rayshader}.  
+You have the ability to generate interative and 3D maps/models with packages like {leaflet} and {rayshader}.
+
+###References
+Rayshader.com
+
+https://www.neonscience.org/neon-lidar-rasters-workshop-20150514
+
+https://gis.stackexchange.com/questions/229356/crop-a-raster-file-in-r
