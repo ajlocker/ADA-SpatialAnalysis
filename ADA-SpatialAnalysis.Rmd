@@ -95,6 +95,7 @@ tm_compass() +
 tm_layout(title = "Camden, Arizona", legend.text.size = 1.1,
 legend.title.size = 1.4, legend.position = c("right", "top"), frame = FALSE)
 ```
+
 ## Mapping densities
 
 Density mapping is a means of visualizing concentrations of spatial phenomena. Point data are most often used for density mapping, but lines can also be used. If you have a high volume of point data distributed across a large area, it may be difficult to understand the distribution of points. Density maps can simplify this data by showing where points are concentrated.
@@ -111,6 +112,7 @@ DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
 proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
 plot(DEPARTAMENTO)
 ```
+
 This shapefile represents a map of Peru with the departments outlined. We will plot the distribution of recorded archaeological sites in Peru onto this map.
 
 ```{R}
@@ -122,6 +124,8 @@ SitioArqueologico <- readOGR(".", "SitioArqueologico")
 proj4string(SitioArqueologico) <- CRS("+init=EPSG:32718")
 plot(SitioArqueologico)
 ```
+
+
 ## Kernel density estimation
 
 To begin, we will perform kernel density estimation on the point data. Kernel density estimation uses a moving quadrant to calculate the density of points for each area within a given threshold.
@@ -341,3 +345,5 @@ https://www.neonscience.org/neon-lidar-rasters-workshop-20150514
 https://gis.stackexchange.com/questions/229356/crop-a-raster-file-in-r
 
 Lansley, G., & Cheshire, J. (2016). "An Introduction to Spatial Data Analysis and Visualisation in R". Consumer Data Research Centre.
+
+https://www.geogpsperu.com/
