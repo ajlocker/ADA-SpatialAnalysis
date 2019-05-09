@@ -76,7 +76,7 @@ tm_shape(range25) + tm_borders(alpha=.7, col = "#a50f15", lwd = 2) +
 tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
 ```
 
-#LiDAR
+#LiDAR Data and R
 
 **Li**ght **D**etection **A**nd **R**anging **(LiDAR)** is very useful survey method that uses pulses of laser light to measure reflected distance between a given sensor (typically on the bottom of an airplane) and a survey area. 
 
@@ -217,3 +217,6 @@ You could then take this 3D generated plot and print it on a 3D printer using th
 ##Concept Review
 Spatial Data has sevaral formats and each of them can be read in R. 
 
+R has the ability to read and manipulate LiDAR data. 
+
+You have the ability to generate interative and 3D maps/models with packages like {leaflet} and {rayshader}.  
