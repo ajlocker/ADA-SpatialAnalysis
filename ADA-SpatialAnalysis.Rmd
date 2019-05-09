@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ##Preliminaries
-Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {sp}, {raster}, {adehabitatHR}, {devtools}, {rayshader}
+Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {sp}, {raster}, {adehabitatHR}, {sf}, {devtools}, {rayshader}
 
 ##Objectives
 The objective of this module is to demonstrate some of the capabilities R has for handling spatial data. We will provide you with a brief overview of the various formats of spatial data, explain how to import spatial data into R, and provide a few examples of spatial data manipulation.  
@@ -133,7 +133,7 @@ So here, we can see basic elevation differences from the surveyed area, but it d
 ```{r}
 hs <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/hsTIN.tif")
 
-# view info about the raster.
+# view info about the raster.Pay attention to the extent portion. We'll be manipulating this data in a bit. 
 hs
 ```
 
@@ -143,11 +143,11 @@ plot(hs,
         col=grey(1:100/100),  # creates a gray scale coloring for the hillshade data
         legend=FALSE,         # removes any legend
         main="LiDAR Survey Austin, Tx", #sets the title of the image
-        axes=FALSE)          # removes any axes titles to keep the image looking clean
+        axes=TRUE)          # keeps axes titles so we can see the coresponding extent data (xmin, xmax, ymin, ymax)
 
 #then plot the DEM ontop of the hillshade
 plot(dem, 
-        axes=FALSE,
+        axes=T,
         alpha=0.5,   # transparency of the object (0=transparent, 1=not transparent)
         add=T)  # add=TRUE (or T); this will add the chm plot on top of the plot we coded immediately above
 ```
@@ -178,17 +178,22 @@ library(devtools)
 devtools::install_github("tylermorganwall/rayshader")
 ```
 
-We're going to use a raster file of just elevation points to generate this map. 
+We're going to use a raster file of just elevation points to generate this map. First, I'm going to have you crop the data to make the map a bit more dramatic looking. We're going to crop the data to a specific quandrant. To do this, we'll use the {raster} package.
+
+```{r}
+cp <- as(extent(620669, 620900, 3348680, 3349000), 'SpatialPolygons')
+crs(cp) <- crs(dem)
+atxcp <- crop(dem, cp)
+atxcp
+plot(atxcp)
+```
 
 ```{r}
 library(rayshader)
 
-#First pull in the data. 
-demlocal <- raster::raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/demtin.tif") 
-
-#Next, we need convert our raster to a matrix:
-atxmat = matrix(raster::extract(demlocal,raster::extent(demlocal),buffer=1000),
-               nrow=ncol(demlocal),ncol=nrow(demlocal))
+#Now that we have our raster cropped, we need convert it to a matrix:
+atxmat = matrix(raster::extract(atxcp,raster::extent(atxcp),buffer=1000),
+               nrow=ncol(atxcp),ncol=nrow(atxcp))
 
 #Then we are going to plot with a slight shadow
 atxmat %>%
