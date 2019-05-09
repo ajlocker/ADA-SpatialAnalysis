@@ -53,6 +53,8 @@ library(adehabitatHR)
 #The other format of code you can use for this purpose is m1 <- readOGR("shp/Zipped_SPA_Shape_file.shp",layer="Zipped_SPA_Shape_file"), but i found this format a little problematic and confusing, and it also gives erros if you dont use it carefully, so i recomment the first code
 #The “.” Is the source and the "Zipped_SPA_Shape_file" is the layer which is the name of the file without the suffixes. 
 #read the shapefile using the bellow code
+#Download data from https://github.com/ajlocker/ADA-SpatialAnalysis/blob/master/Zipped_SPA_Shape_file.shp
+
 mydata1 <-readOGR(".", "Zipped_SPA_Shape_file")
 mydata1
 head(mydata1)
@@ -96,16 +98,20 @@ Density mapping is a means of visualizing concentrations of spatial phenomena. P
 Density mapping can be incredibly useful when you have a large data set representing isolated phenomena over a continuous surface (e.g., artifacts, populations). As such, density mapping would not be useful for representing small data sets, or data that represents continuous phenomena (e.g., elevation or temperature). With spatial data visualization it is important to understand first what kind of data you have, and what you want to represent or analyze.
 
 ```{R}
+#Download data from https://github.com/ajlocker/ADA-SpatialAnalysis/blob/master/DEPARTAMENTO.shp
+
 #Loading and plotting shapefile (Peru and its departamentos)
 DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
-# Setting the projection to the appropriate coordinate system
+# Setting the coordinate system
 proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
 plot(DEPARTAMENTO)
 ```
 ```{R}
+#Download data from https://github.com/ajlocker/ADA-SpatialAnalysis/blob/master/SitioArqueologico.shp
+
 #Loading and plotting point data (recorded archaeological sites in Peru)
 SitioArqueologico <- readOGR(".", "SitioArqueologico")
-# Setting the projection to the appropriate coordinate system
+# Setting the coordinate system
 proj4string(SitioArqueologico) <- CRS("+init=EPSG:32718")
 plot(SitioArqueologico)
 ```
@@ -173,10 +179,10 @@ The first thing we will need to do is set up a working directory for the files.
 library(raster)
 
 # set working directory to data folder
-setwd("C:/Users/ajlocker/Desktop/R Geospatial")
+# setwd("C:/Users/ajlocker/Desktop/R Geospatial")
 ```
 
-You'll need to go to download the following files and save them inside your working directory. 
+You'll need to go to download the following files and save them inside your working directory.
 
 https://github.com/ajlocker/ADA-SpatialAnalysis/blob/master/ATXLiDAR/demTIN.tif
 
