@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ##Preliminaries
-Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {sp}, {raster}, {adehabitatHR}, {devtools}, {rayshader}, {mapmate}
+Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {sp}, {raster}, {adehabitatHR}, {sf}, {devtools}, {rayshader}
 
 ##Objectives
 The objective of this module is to demonstrate some of the capabilities R has for handling spatial data. We will provide you with a brief overview of the various formats of spatial data, explain how to import spatial data into R, and provide a few examples of spatial data manipulation.  
@@ -48,6 +48,7 @@ library(sp)
 library(raster)
 library(adehabitatHR)
 ```
+
 ```{R}
 #Using a one line code you can load shapefile into R and read it: m <- readOGR(".", "Zipped_SPA_Shape_file") 
 #The other format of code you can use for this purpose is m1 <- readOGR("shp/Zipped_SPA_Shape_file.shp",layer="Zipped_SPA_Shape_file"), but i found this format a little problematic and confusing, and it also gives erros if you dont use it carefully, so i recomment the first code
@@ -59,20 +60,24 @@ mydata1 <-readOGR(".", "Zipped_SPA_Shape_file")
 mydata1
 head(mydata1)
 ```
+
 ```{R}
 #Plot the data into a map
 plot(mydata1)
 ```
+
 ```{R}
 # Creates a choropleth map of our any( in this case SQ_MILES) variable
 #With a choropleth map you can show statistical data with different specifications such as color and symbols shading on the map
 m <- qtm(mydata1, fill = "SQ_MILES")
 m
 ```
+
 ```{R}
 #Removes the black borders
 tm_shape(mydata1) + tm_fill("SQ_MILES")
 ```
+
 ```{R}
 #Add borders
 #Alpha is the transparency of the borders 
@@ -82,6 +87,7 @@ tm_shape(mydata1) + tm_fill("SQ_MILES") + tm_borders(alpha=.9)
 #Adding a north arrow
 tm_shape(mydata1) + tm_fill("SQ_MILES") + tm_compass()
 ```
+
 ```{R}
 #Giving a title to the map
 tm_shape(mydata1) + tm_fill("SQ_MILES", palette = "Reds",
@@ -106,6 +112,7 @@ DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
 proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
 plot(DEPARTAMENTO)
 ```
+
 ```{R}
 #Download data from https://github.com/ajlocker/ADA-SpatialAnalysis/blob/master/SitioArqueologico.shp
 
@@ -125,14 +132,17 @@ Here we see that we have a very high density of points and it is difficult to di
 kde.output <- kernelUD(SitioArqueologico, h="href", grid = 1000)
 plot(kde.output)
 ```
+
 ```{R}
 #Convert to raster
 kde <- raster(kde.output)
 ```
+
 ```{R}
 #Map raster
 tm_shape(kde) + tm_raster("ud")
 ```
+
 ```{R}
 # Mask the raster by the output area polygon.
 masked_kde <- mask(kde, SitioArqueologico)
@@ -141,6 +151,7 @@ range75 <- getverticeshr(kde.output, percent = 75)
 range50 <- getverticeshr(kde.output, percent = 50)
 range25 <- getverticeshr(kde.output, percent = 25)
 ```
+
 ```{R}
 tm_shape(DEPARTAMENTO) + tm_fill(col = "#f0f0f0") + tm_borders(alpha=.8, col = "white") + tm_shape(SitioArqueologico) + tm_dots(col = "blue") +
 tm_shape(range75) + tm_borders(alpha=.7, col = "#fb6a4a", lwd = 2) + tm_fill(alpha=.1, col = "#fb6a4a") +
@@ -150,11 +161,6 @@ tm_shape(range25) + tm_borders(alpha=.7, col = "#a50f15", lwd = 2) +
 tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
 ```
 
-##Overlaying Maps and Creating 3D Maps
-
-##3D Plotting to Visualize Data
-
-#Load in the packages
 
 #LiDAR Data and R
 
@@ -212,7 +218,7 @@ So here, we can see basic elevation differences from the surveyed area, but it d
 ```{r}
 hs <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/hsTIN.tif")
 
-# view info about the raster.
+# view info about the raster.Pay attention to the extent portion. We'll be manipulating this data in a bit. 
 hs
 ```
 
@@ -222,11 +228,11 @@ plot(hs,
         col=grey(1:100/100),  # creates a gray scale coloring for the hillshade data
         legend=FALSE,         # removes any legend
         main="LiDAR Survey Austin, Tx", #sets the title of the image
-        axes=FALSE)          # removes any axes titles to keep the image looking clean
+        axes=TRUE)          # keeps axes titles so we can see the coresponding extent data (xmin, xmax, ymin, ymax)
 
 #then plot the DEM ontop of the hillshade
 plot(dem, 
-        axes=FALSE,
+        axes=T,
         alpha=0.5,   # transparency of the object (0=transparent, 1=not transparent)
         add=T)  # add=TRUE (or T); this will add the chm plot on top of the plot we coded immediately above
 ```
@@ -257,17 +263,23 @@ library(devtools)
 devtools::install_github("tylermorganwall/rayshader")
 ```
 
-We're going to use a raster file of just elevation points to generate this map. 
+We're going to use a raster file of just elevation points to generate this map. First, I'm going to have you crop the data to make the map a bit more dramatic looking. We're going to crop the data to a specific quandrant. To do this, we'll use the {raster} package.
 
+```{r}
+cp <- as(extent(620669, 620900, 3348680, 3349000), 'SpatialPolygons')
+crs(cp) <- crs(dem)
+atxcp <- crop(dem, cp)
+atxcp
+plot(atxcp)
+```
+
+Now that our raster is cropped, we will create our 3D maps. 
 ```{r}
 library(rayshader)
 
-#First pull in the data. 
-demlocal <- raster::raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/demtin.tif") 
-
-#Next, we need convert our raster to a matrix:
-atxmat = matrix(raster::extract(demlocal,raster::extent(demlocal),buffer=1000),
-               nrow=ncol(demlocal),ncol=nrow(demlocal))
+#First we need to convert our cropped raster file to a matrix:
+atxmat = matrix(raster::extract(atxcp,raster::extent(atxcp),buffer=1000),
+               nrow=ncol(atxcp),ncol=nrow(atxcp))
 
 #Then we are going to plot with a slight shadow
 atxmat %>%
@@ -298,4 +310,11 @@ Spatial Data has sevaral formats and each of them can be read in R.
 
 R has the ability to read and manipulate LiDAR data. 
 
-You have the ability to generate interative and 3D maps/models with packages like {leaflet} and {rayshader}.  
+You have the ability to generate interative and 3D maps/models with packages like {leaflet} and {rayshader}.
+
+###References
+Rayshader.com
+
+https://www.neonscience.org/neon-lidar-rasters-workshop-20150514
+
+https://gis.stackexchange.com/questions/229356/crop-a-raster-file-in-r
