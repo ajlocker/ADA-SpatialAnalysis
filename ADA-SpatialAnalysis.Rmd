@@ -15,9 +15,10 @@ Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {s
 ##Objectives
 The objective of this module is to demonstrate some of the capabilities R has for handling spatial data. We will provide you with a brief overview of the various formats of spatial data, explain how to import spatial data into R, and provide a few examples of spatial data manipulation.  
 
+Before we begin with the data, you'll need to link up the the GitHub repository. Create a New Project --> Version Control --> Git:
+https://github.com/ajlocker/ADA-SpatialAnalysis.git
 
-##Preliminaries
-Load and install the following packages: {sf}, {raster}, {tmap}
+This will allow you to access all the necessary files for this module. 
 
 #Shapefile
 Shapefile is a data storage format where you can store different types of geographic information and geospatial data such as location, shape, line and points and their various details such as names etc. The information in a shapefile is actually a big set of files with large data in them combined within one shapefile. Like a csv file shapefile (shp file for short) also has different set of details and files where large data is stored that can be seen in columns when loaded to R. Many GIS applications and softwares such as ArcGIS use shp file for their visualizations, mapping and analyses. But since they are not usually free it’s a great feature that R has as a free tool.
@@ -29,15 +30,7 @@ Raster data or “gridded” data represents surfaces and are saved as pixels wh
 
 So now that we know the definition of the above terms we know that I mentioned them because they are among the most important features in geospatial visualization.
 
-##Objectives
-
-
-
 ##Loading GIS Data into R
-
-##Point Pattern Analysis
-
-##Density Mapping
 
 ```{R}
 library(tmap)
@@ -47,13 +40,15 @@ library(rgeos)
 library(sp)
 library(raster)
 library(adehabitatHR)
+
 ```
 
 ```{R}
-#Using a one line code you can load shapefile into R and read it: m <- readOGR(".", "Zipped_SPA_Shape_file") 
+#Using a one line code you can load shapefile into R and read it: #m <- readOGR(".", "Zipped_SPA_Shape_file") 
 #The other format of code you can use for this purpose is m1 <- readOGR("shp/Zipped_SPA_Shape_file.shp",layer="Zipped_SPA_Shape_file"), but i found this format a little problematic and confusing, and it also gives erros if you dont use it carefully, so i recomment the first code
 #The “.” Is the source and the "Zipped_SPA_Shape_file" is the layer which is the name of the file without the suffixes. 
 #read the shapefile using the bellow code
+
 mydata1 <-readOGR(".", "Zipped_SPA_Shape_file")
 mydata1
 head(mydata1)
