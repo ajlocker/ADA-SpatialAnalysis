@@ -16,6 +16,27 @@ Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {s
 The objective of this module is to demonstrate some of the capabilities R has for handling spatial data. We will provide you with a brief overview of the various formats of spatial data, explain how to import spatial data into R, and provide a few examples of spatial data manipulation.  
 
 
+##Preliminaries
+Load and install the following packages: {sf}, {raster}, {tmap}
+
+#Shapefile
+Shapefile is a data storage format where you can store different types of geographic information and geospatial data such as location, shape, line and points and their various details such as names etc. The information in a shapefile is actually a big set of files with large data in them combined within one shapefile. Like a csv file shapefile (shp file for short) also has different set of details and files where large data is stored that can be seen in columns when loaded to R. Many GIS applications and softwares such as ArcGIS use shp file for their visualizations, mapping and analyses. But since they are not usually free it’s a great feature that R has as a free tool.
+
+#point data, Raster data
+Point data represent distinct and separate points and are commonly defined by their geographic coordination and can be located within a polygon, for example location of a bridge and an archaeological site can be shown as a point.
+
+Raster data or “gridded” data represents surfaces and are saved as pixels where each pixel represents a surface.  
+
+So now that we know the definition of the above terms we know that I mentioned them because they are among the most important features in geospatial visualization.
+
+##Objectives
+
+
+
+##Loading GIS Data into R
+
+##Point Pattern Analysis
+
 ##Density Mapping
 
 ```{R}
@@ -29,18 +50,76 @@ library(adehabitatHR)
 ```
 
 ```{R}
+#Using a one line code you can load shapefile into R and read it: m <- readOGR(".", "Zipped_SPA_Shape_file") 
+#The other format of code you can use for this purpose is m1 <- readOGR("shp/Zipped_SPA_Shape_file.shp",layer="Zipped_SPA_Shape_file"), but i found this format a little problematic and confusing, and it also gives erros if you dont use it carefully, so i recomment the first code
+#The “.” Is the source and the "Zipped_SPA_Shape_file" is the layer which is the name of the file without the suffixes. 
+#read the shapefile using the bellow code
+mydata1 <-readOGR(".", "Zipped_SPA_Shape_file")
+mydata1
+head(mydata1)
+```
+
+```{R}
+#Plot the data into a map
+plot(mydata1)
+```
+
+```{R}
+# Creates a choropleth map of our any( in this case SQ_MILES) variable
+#With a choropleth map you can show statistical data with different specifications such as color and symbols shading on the map
+m <- qtm(mydata1, fill = "SQ_MILES")
+m
+```
+
+```{R}
+#Removes the black borders
+tm_shape(mydata1) + tm_fill("SQ_MILES")
+```
+
+```{R}
+#Add borders
+#Alpha is the transparency of the borders 
+tm_shape(mydata1) + tm_fill("SQ_MILES") + tm_borders(alpha=.9)
+```
+```{R}
+#Adding a north arrow
+tm_shape(mydata1) + tm_fill("SQ_MILES") + tm_compass()
+```
+
+```{R}
+#Giving a title to the map
+tm_shape(mydata1) + tm_fill("SQ_MILES", palette = "Reds",
+style = "quantile", title = "% with a SQ_MILES") +
+tm_borders(alpha=.4) +
+tm_compass() +
+tm_layout(title = "Camden, Arizona", legend.text.size = 1.1,
+legend.title.size = 1.4, legend.position = c("right", "top"), frame = FALSE)
+```
+## ## Mapping densities
+
+Density mapping is a means of visualizing concentrations of spatial phenomena. Point data are most often used for density mapping, but lines can also be used. If you have a high volume of point data distributed across a large area, it may be difficult to understand the distribution of points. Density maps can simplify this data by showing where points are concentrated.
+
+Density mapping can be incredibly useful when you have a large data set representing isolated phenomena over a continuous surface (e.g., artifacts, populations). As such, density mapping would not be useful for representing small data sets, or data that represents continuous phenomena (e.g., elevation or temperature). With spatial data visualization it is important to understand first what kind of data you have, and what you want to represent or analyze.
+
+```{R}
 #Loading and plotting shapefile (Peru and its departamentos)
 DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
-plot(DEPARTAMENTO)
+# Setting the projection to the appropriate coordinate system
 proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
+plot(DEPARTAMENTO)
 ```
 
 ```{R}
 #Loading and plotting point data (recorded archaeological sites in Peru)
 SitioArqueologico <- readOGR(".", "SitioArqueologico")
-plot(SitioArqueologico)
+# Setting the projection to the appropriate coordinate system
 proj4string(SitioArqueologico) <- CRS("+init=EPSG:32718")
+plot(SitioArqueologico)
 ```
+
+Here we see that we have a very high density of points and it is difficult to distinguish where the higher concentrations of points are located at this resolution.
+
+## Kernel density
 
 ```{R}
 #Kernel density estimation uses a moving quadrant to calculate the density for each area within a given threshold.
@@ -76,6 +155,7 @@ tm_shape(range25) + tm_borders(alpha=.7, col = "#a50f15", lwd = 2) +
 tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
 ```
 
+
 #LiDAR Data and R
 
 **Li**ght **D**etection **A**nd **R**anging **(LiDAR)** is very useful survey method that uses pulses of laser light to measure reflected distance between a given sensor (typically on the bottom of an airplane) and a survey area. 
@@ -97,7 +177,6 @@ The first thing we will need to do is set up a working directory for the files.
 ```{r}
 # Load needed packages
 library(raster)
-library(rgdal)
 
 # set working directory to data folder
 setwd("C:/Users/ajlocker/Desktop/R Geospatial")
