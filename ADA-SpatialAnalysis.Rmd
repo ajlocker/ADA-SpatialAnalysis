@@ -14,12 +14,15 @@ Load and install the following packages: {tmap}, {leaflet}, {rgdal}, {rgeos}, {s
 ##Objectives
 The objective of this module is to demonstrate some of the capabilities R has for handling spatial data. We will provide you with a brief overview of the various formats of spatial data, explain how to import spatial data into R, and provide a few examples of spatial data manipulation.  
 
-
 Before we begin with the data, you'll need to link up the the GitHub repository. Create a New Project --> Version Control --> Git:
 https://github.com/ajlocker/ADA-SpatialAnalysis.git
 
 This will allow you to access all the necessary files for this module. 
 
+Before we begin with the data, you'll need to link up the the GitHub repository. Create a New Project --> Version Control --> Git:
+https://github.com/ajlocker/ADA-SpatialAnalysis.git
+
+This will allow you to access all the necessary files for this module.
 
 #Shapefile
 Shapefile is a data storage format where you can store different types of geographic information and geospatial data such as location, shape, line and points and their various details such as names etc. The information in a shapefile is actually a big set of files with large data in them combined within one shapefile. Like a csv file shapefile (shp file for short) also has different set of details and files where large data is stored that can be seen in columns when loaded to R. Many GIS applications and softwares such as ArcGIS use shp file for their visualizations, mapping and analyses. But since they are not usually free it’s a great feature that R has as a free tool.
@@ -31,14 +34,7 @@ Raster data or “gridded” data represents surfaces and are saved as pixels wh
 
 So now that we know the definition of the above terms we know that I mentioned them because they are among the most important features in geospatial visualization.
 
-##Loading GIS Data into R
-
 First we will show how you can load GIS data into R, and how you can manipulate it to create basic maps.
-
-##Density Mapping
-
-In the density mapping section, we will learn how to visualize concentrations of point data. Specifically, we will use kernel density estimation to calculate where the highest concentrations of point data are located in our data set.
-
 
 ```{R}
 library(tmap)
@@ -51,7 +47,7 @@ library(adehabitatHR)
 
 ```
 
-Before we start, please make sure that you set your working directory, and download all the required files into your working directory.
+## Using spatial data in R
 
 ```{R}
 #Using a one line code you can load shapefile into R and read it: #m <- readOGR(".", "Zipped_SPA_Shape_file") 
@@ -83,24 +79,24 @@ m
 ```
 
 ```{R}
-#Removes the black borders
-##here with tm_shape fucntion we specify a spatial data object and then we can add various elements to it.
+# Removes the black borders
+# here with tm_shape fucntion we specify a spatial data object and then we can add various elements to it.
 tm_shape(mydata1) + tm_fill("SQ_MILES")
 ```
 ```{R}
-#Add borders
-#Alpha is the transparency of the borders 
-##using the function tm_borders we are able to add borders.
+# Add borders
+# Alpha is the transparency of the borders 
+# using the function tm_borders we are able to add borders.
 tm_shape(mydata1) + tm_fill("SQ_MILES") + tm_borders(alpha=.9)
 ```
 
 ```{R}
-#Adding a north arrow
+# Adding a north arrow
 tm_shape(mydata1) + tm_fill("SQ_MILES") + tm_compass()
 ```
 
 ```{R}
-#Giving a title to the map
+# Giving a title to the map
 tm_shape(mydata1) + tm_fill("SQ_MILES", palette = "Reds",
 style = "quantile", title = "% with a SQ_MILES") +
 tm_borders(alpha=.4) +
@@ -109,7 +105,9 @@ tm_layout(title = "Camden, Arizona", legend.text.size = 1.1,
 legend.title.size = 1.4, legend.position = c("right", "top"), frame = FALSE)
 ```
 
-## ## Mapping densities
+##Density Mapping
+
+In the density mapping section, we will learn how to visualize concentrations of point data. Specifically, we will use kernel density estimation to calculate where the highest concentrations of point data are located in our data set.
 
 Density mapping is a means of visualizing concentrations of spatial phenomena. Point data are most often used for density mapping, but lines can also be used. If you have a high volume of point data distributed across a large area, it may be difficult to understand the distribution of points. Density maps can simplify this data by showing where points are concentrated.
 
@@ -125,25 +123,26 @@ DEPARTAMENTO <- readOGR(".", "DEPARTAMENTO")
 proj4string(DEPARTAMENTO) <- CRS("+init=EPSG:32718")
 plot(DEPARTAMENTO)
 ```
+
 This shapefile represents a map of Peru with the departments outlined. We will plot the distribution of recorded archaeological sites in Peru onto this map.
 
 ```{R}
-#Download data from https://github.com/ajlocker/ADA-SpatialAnalysis/blob/master/SitioArqueologico.shp
+# Download data from https://github.com/ajlocker/ADA-SpatialAnalysis/blob/master/SitioArqueologico.shp
 
-#Loading and plotting point data (recorded archaeological sites in Peru)
+# Loading and plotting point data (recorded archaeological sites in Peru)
 SitioArqueologico <- readOGR(".", "SitioArqueologico")
 # Setting the coordinate system for the point data
 proj4string(SitioArqueologico) <- CRS("+init=EPSG:32718")
 plot(SitioArqueologico)
 ```
 
-These points represent the distribution of recorded archaeological sites in Peru. Here we see that we have a very high density of points and it is difficult to distinguish where the higher concentrations of points are located at this resolution.
-
 ## Kernel density estimation
 
 To begin, we will perform kernel density estimation on the point data. Kernel density estimation uses a moving quadrant to calculate the density of points for each area within a given threshold.
 
 For kernel density estimation, be sure you have loaded the package "adehabitatHR" into your library. Here we use the kernelUD function. UD refers to Utilization Distribution, which is a bivariate function. Other functions are available to calculate kernel density in this package.
+
+These points represent the distribution of recorded archaeological sites in Peru. Here we see that we have a very high density of points and it is difficult to distinguish where the higher concentrations of points are located at this resolution.
 
 ```{R}
 kde.output <- kernelUD(SitioArqueologico, h="href", grid = 1000)
@@ -176,13 +175,13 @@ plot(range75)
 ```
 
 ```{R}
-#Top 50% highest density
+# Top 50% highest density
 range50 <- getverticeshr(kde.output, percent = 50)
 plot(range50)
 ```
 
 ```{R}
-#Top 25% highest density
+# Top 25% highest density
 range25 <- getverticeshr(kde.output, percent = 25)
 plot(range25)
 ```
@@ -198,17 +197,7 @@ tm_shape(range25) + tm_borders(alpha=.7, col = "#a50f15", lwd = 2) +
 tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
 ```
 
-To review, with the code outlined above we have calculated kernel density esitmates and mapped these densities onto shapefiles and point data in order to understand where the highest densities of points are located on our map.
-
-```{R}
-tm_shape(DEPARTAMENTO) + tm_fill(col = "#f0f0f0") + tm_borders(alpha=.8, col = "white") + tm_shape(SitioArqueologico) + tm_dots(col = "blue") +
-tm_shape(range75) + tm_borders(alpha=.7, col = "#fb6a4a", lwd = 2) + tm_fill(alpha=.1, col = "#fb6a4a") +
-tm_shape(range50) + tm_borders(alpha=.7, col = "#de2d26", lwd = 2) +
-tm_fill(alpha=.1, col = "#de2d26") +
-tm_shape(range25) + tm_borders(alpha=.7, col = "#a50f15", lwd = 2) +
-tm_fill(alpha=.1, col = "#a50f15") + tm_layout(frame = FALSE)
-```
-
+To review, with the code outlined above we have calculated kernel density estimates and mapped these densities onto shapefiles and point data in order to understand where the highest densities of points are located on our map.
 
 #LiDAR Data and R
 
@@ -220,7 +209,7 @@ This becomes exceptionally useful when your research area is in the middle of a 
 
 ![Caana Temple, Caracol](Jungle with Pyramid.jpg)
 
-You can see that the forest canopy is fairly dense around the site. LiDAR essentially allows us to complete an aerial survey and remove the canopy layer to see what is happening below the tree line.  
+You can see that the forest canopy is fairly dense around the site. LiDAR essentially allows us to complete an aerial survey and remove the canopy layer to see what is happening below the tree line. We then have the ability to "groundtruth" the LiDAR data to see if the data match what is actually on the surface. 
 
 ![Caracol map compared to LiDAR imagery](Caracol LiDAR Map.jpg)
 
@@ -249,7 +238,7 @@ Next, we are going to load in the data by assigning them to be rasters. The DEM 
 
 ```{r}
 # assign raster to object
-dem <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/demTIN.tif")
+dem <- raster("~/Development/Package/ADA-SpatialAnalysis/demTIN.tif")
 
 # view info about the raster.
 dem
@@ -264,7 +253,7 @@ plot(dem, main="Digital Elevation Model \n Austin, Texas")
 So here, we can see basic elevation differences from the surveyed area, but it doesn't show us much detail from the LiDAR imaging. We can examine this data much more effectively by plotting it on top of the Hillshade file, which will essentially add depth to the map. 
 
 ```{r}
-hs <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/hsTIN.tif")
+hs <- raster("~/Development/Package/ADA-SpatialAnalysis/hsTIN.tif")
 
 # view info about the raster.Pay attention to the extent portion. We'll be manipulating this data in a bit. 
 hs
@@ -287,12 +276,12 @@ plot(dem,
 
 #Creating an Interactive Map
 
-We're going to use the {leaflet} package to plot our lidar data onto an existing map. We can then zoom in and out to see where our data are geographically. 
+We're going to use the {leaflet} package to plot our lidar data onto an existing map. We can then zoom in and out to see where our data are geographically.
 
 
 ```{r}
 library(leaflet)
-hs <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/hsTIN.tif")
+hs <- raster("~/Development/Package/ADA-SpatialAnalysis/hsTIN.tif")
 pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(hs),
   na.color = "transparent")
 
@@ -313,12 +302,14 @@ devtools::install_github("tylermorganwall/rayshader")
 
 We're going to use a raster file of just elevation points to generate this map. First, I'm going to have you crop the data to make the map a bit more dramatic looking. We're going to crop the data to a specific quandrant. To do this, we'll use the {raster} package.
 
+If we look back at our DEM maps, we are going to target the bottom left corner of the image. The axes on the DEM correlate to the extent data from the raster information we pulled. We are going to crop our raster, using the as(extent()) function from the {raster} package
+
 ```{r}
-cp <- as(extent(620669, 620900, 3348680, 3349000), 'SpatialPolygons')
-crs(cp) <- crs(dem)
-atxcp <- crop(dem, cp)
+cp <- as(extent(620669, 620900, 3348680, 3349000), 'SpatialPolygons') #Here we are telling R what our new map coordinates will be on a UTM coordinate system and that we want to turn our Raster into spatialpolygons. 
+crs(cp) <- crs(dem) #crs stands for Coordinate Reference System, and gives us map projection information
+atxcp <- crop(dem, cp) #Here we crop the map to be our selected area. 
 atxcp
-plot(atxcp)
+plot(atxcp) #plot to see the new area. 
 ```
 
 Now that our raster is cropped, we will create our 3D maps. 
@@ -340,7 +331,7 @@ atxmat %>%
 #adds ambient shading to the map
 ambmat = ambient_shade(atxmat)
 
-#This will generate a 3D interactive map. It should generate a pop-up window
+#This will generate a 3D interactive map. It should generate a pop-up window that you can then use your mouse to move around as you wish. You can view from the side to see the elevations, zoom in or out, rotate around, etc. 
 atxmat %>%
   sphere_shade(texture = "bw") %>%
   add_water(detect_water(atxmat), color="bw") %>%
@@ -366,3 +357,7 @@ Rayshader.com
 https://www.neonscience.org/neon-lidar-rasters-workshop-20150514
 
 https://gis.stackexchange.com/questions/229356/crop-a-raster-file-in-r
+
+Lansley, G., & Cheshire, J. (2016). "An Introduction to Spatial Data Analysis and Visualisation in R". Consumer Data Research Centre.
+
+https://www.geogpsperu.com/
