@@ -222,7 +222,7 @@ The first thing we will need to do is set up a working directory for the files.
 library(raster)
 
 # set working directory to data folder
-# setwd("C:/Users/ajlocker/Desktop/R Geospatial")
+#setwd("C:/Users/ajlocker/Desktop/R Geospatial")
 ```
 
 You'll need to go to download the following files and save them inside your working directory.
@@ -238,7 +238,7 @@ Next, we are going to load in the data by assigning them to be rasters. The DEM 
 
 ```{r}
 # assign raster to object
-dem <- raster("~/Development/Package/ADA-SpatialAnalysis/demTIN.tif")
+dem <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/demTIN.tif")
 
 # view info about the raster.
 dem
@@ -253,7 +253,7 @@ plot(dem, main="Digital Elevation Model \n Austin, Texas")
 So here, we can see basic elevation differences from the surveyed area, but it doesn't show us much detail from the LiDAR imaging. We can examine this data much more effectively by plotting it on top of the Hillshade file, which will essentially add depth to the map. 
 
 ```{r}
-hs <- raster("~/Development/Package/ADA-SpatialAnalysis/hsTIN.tif")
+hs <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/hsTIN.tif")
 
 # view info about the raster.Pay attention to the extent portion. We'll be manipulating this data in a bit. 
 hs
@@ -281,7 +281,7 @@ We're going to use the {leaflet} package to plot our lidar data onto an existing
 
 ```{r}
 library(leaflet)
-hs <- raster("~/Development/Package/ADA-SpatialAnalysis/hsTIN.tif")
+hs <- raster("C:/Users/ajlocker/Desktop/R Geospatial/ATX/hsTIN.tif")
 pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(hs),
   na.color = "transparent")
 
